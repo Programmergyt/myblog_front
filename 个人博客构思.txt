@@ -1,0 +1,111 @@
+旧版设计：
+
+我想基于vue、elementplus、axios、mysql、springboot设计一个个人博客。
+帮我进行组件划分与设计、路由设计、数据库设计、基于mock的模拟接口设计。
+网站顶部的navigation bar包括“主页”、“分类”、“个人简介”三项，分别对应一个页面。
+网站一开始显示的是“主页”界面。也可以通过点击navigationbar的“主页”键从其他界面回到主页。
+主页中间包含很多个博客组件，博客组件的底部有时间、分类两个标签，点进去即可查看博客的详细内容(markdown格式，带有图片）。
+每篇博客的详细内容下方都有评论区，网站访问者可填写昵称，然后进行评论。
+每一篇博客可以属于多个分类标签。
+每个页面底部会有一个Footer显示网站的备案编号、运行时间、文章个数、文章总字数、访问人数、总访问量。
+点击navigationbar的“分类”会显示分类界面。将不同的分类按照tag进行显示。点击tag会跳转显示对应分类的所有博客。
+点击navigationbar的“个人简介”会跳转到个人简介界面，显示我的个人信息，包括头像、昵称、学校、自我介绍等等。
+
+项目目录：
+my-blog-frontend/
+├── public/
+│   └── index.html
+│
+├── src/
+│   ├── assets/                      # 图片、样式等静态资源
+│   │   └── pic1.png
+│   │   └── pic2.png
+│   │   └── pic3.png
+│
+│   ├── components/                 # 可复用组件
+│   │   ├── BlogCard.vue            # 主页的博客组件
+│   │   ├── CategoryTag.vue         # 分类页的分类tag
+│   │   ├── CommentSection.vue      # 评论区
+│   │   ├── NavigationBar.vue       # 顶部导航栏
+│   │   └── FooterBar.vue           # 底部栏
+│
+│   ├── layouts/                    # 全局布局组件
+│   │   └── AppLayout.vue
+│
+│   ├── pages/                      # 页面组件（路由对应页面）
+│   │   ├── HomePage.vue            # 主页
+│   │   ├── CategoryPage.vue        # 分类页
+│   │   ├── CategoryListPage.vue    # 显示某一标签下所有文章的页面
+│   │   ├── BlogDetail.vue          # 显示博客详细内容
+│   │   └── AboutPage.vue           
+│
+│   ├── router/                     # 路由配置
+│   │   └── index.js
+│
+│   ├── services/                   # 请求封装（Axios、API 模块）
+│   │   ├── axios.js                # Axios 实例配置
+│   │   └── api.js                  # API 请求函数封装
+│
+│   ├── mock/                       # mock 数据与接口模拟
+│   │   └── mock.js
+│
+│
+│   ├── utils/                      # 工具函数，如日期格式化等
+│   │   └── formatDate.js
+│
+│   ├── App.vue                     # 根组件
+│   ├── main.js                     # 应用入口
+│   └── style.css                   # 全局样式（如用 Tailwind 可忽略）
+│
+├── .gitignore
+├── package.json
+├── vite.config.js / vue.config.js # 构建配置（取决于你用 Vite 还是 Vue CLI）
+└── README.md
+
+数据库设计
+-- 博客文章
+CREATE TABLE post (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  summary TEXT,
+  content LONGTEXT NOT NULL,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 分类标签
+CREATE TABLE category (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- 文章-分类 多对多关联
+CREATE TABLE post_category (
+  post_id BIGINT,
+  category_id BIGINT,
+  PRIMARY KEY (post_id, category_id),
+  FOREIGN KEY (post_id) REFERENCES post(id),
+  FOREIGN KEY (category_id) REFERENCES category(id)
+);
+
+-- 评论
+CREATE TABLE comment (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  post_id BIGINT,
+  nickname VARCHAR(50) NOT NULL,
+  content TEXT NOT NULL,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (post_id) REFERENCES post(id)
+);
+
+-- 用于统计（可选：单独一张表或缓存）
+CREATE TABLE stats (
+  id TINYINT PRIMARY KEY,  -- 1：全站统计
+  total_posts INT,
+  total_words BIGINT,
+  unique_visitors BIGINT,
+  total_views BIGINT,
+  uptime_seconds BIGINT
+);
+
+新版设计：
