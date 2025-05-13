@@ -1,11 +1,10 @@
-<!-- src/layouts/AppLayout.vue -->
+<!-- src/layouts/ContentLayout.vue -->
 <template>
   <div class="layout">
     <NavigationBar />
     <el-main class="main-content">
       <transition name="fade" mode="out-in">
-<!--slot对应显示 App.vue 中 router-view 的内容，相当于是本vue提供的一个输入参数-->
-        <slot />
+        <router-view />
       </transition>
     </el-main>
     <FooterBar />

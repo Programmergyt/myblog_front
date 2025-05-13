@@ -20,7 +20,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAllCategories } from '@/services/api'
+import { getAllCategories } from '@/services/api.js'
 
 const categories = ref([])
 const router = useRouter()

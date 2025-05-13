@@ -12,7 +12,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import BlogCard from '@/components/BlogCard.vue'
-import { getAllPosts, getAllCategories } from '@/services/api'
+import { getAllPosts, getAllCategories } from '@/services/api.js'
 
 // ref 是用来声明响应式数据的函数。ref 会把一个普通的变量，变成可以被 Vue 自动追踪变化的变量。
 const posts = ref([])

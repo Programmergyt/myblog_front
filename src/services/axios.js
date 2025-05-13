@@ -7,6 +7,25 @@ const instance = axios.create({
     timeout: 5000
 })
 
+
+
+// 请求拦截器（可选启用）
+instance.interceptors.request.use(config => {
+    // const token = localStorage.getItem('token');
+    // if (token) {
+    //     config.headers.Authorization = 'Bearer ' + token;
+    // }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
+
+instance.interceptors.response.use(response => {
+    return response.data
+}, error => {
+    return Promise.reject(error);
+});
+
 // 请求拦截器（在每次发送请求之前执行）
 // 作用：从 localStorage 中读取 JWT 令牌，自动加入请求头中
 // instance.interceptors.request.use(config => {
@@ -26,23 +45,6 @@ const instance = axios.create({
 //     // 如果请求配置出错（很少见），返回错误
 //     return Promise.reject(error);
 // });
-
-// 请求拦截器（可选启用）
-instance.interceptors.request.use(config => {
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //     config.headers.Authorization = 'Bearer ' + token;
-    // }
-    return config;
-}, error => {
-    return Promise.reject(error);
-});
-
-instance.interceptors.response.use(response => {
-    return response.data
-}, error => {
-    return Promise.reject(error);
-});
 
 // 响应拦截器（在每次接收到响应之后执行）
 // 作用：判断后端返回的数据结构是否成功，并统一处理 JWT 过期等异常情况

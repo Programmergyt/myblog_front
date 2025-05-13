@@ -32,32 +32,31 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { getCommentsByPostId, postComment } from '@/services/api'
+import {useRoute} from "vue-router";
 
-const props = defineProps({
-  postId: {
-    type: Number,
-    required: true
-  }
-})
-
+const route = useRoute()
+const postId = route.params.postId
 const comments = ref([])
 const nickname = ref('')
 const content = ref('')
 
-const fetchComments = async () => {
+// 拉取评论的函数
+const loadData = async () => {
   try {
-    const res = await getCommentsByPostId(props.postId)
+    const res = await getCommentsByPostId(postId)
     comments.value = res
   } catch (e) {
     console.error('获取评论失败', e)
   }
 }
 
-onMounted(fetchComments)
+// 一开始就拉取评论
+onMounted(loadData)
 
 // 监听 postId 的变化，重新获取评论
-watch(() => props.postId, fetchComments)
+watch(() => postId, loadData)
 
+// 提交评论
 const handleSubmit = async () => {
   if (!nickname.value || !content.value) {
     alert('昵称和评论内容不能为空')
@@ -74,7 +73,7 @@ const handleSubmit = async () => {
       create_time: formattedTime
     })
     // 重新获取评论列表
-    await fetchComments()
+    await loadData()
     // 清空表单
     nickname.value = ''
     content.value = ''

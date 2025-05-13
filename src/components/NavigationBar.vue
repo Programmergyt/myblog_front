@@ -12,58 +12,46 @@
     <div style="display: flex;">
       <el-menu-item index="/" style="font-size: 18px; padding: 20px;">博客</el-menu-item>
       <el-menu-item index="/category" style="font-size: 18px; padding: 20px;">做饭</el-menu-item>
-      <el-menu-item index="/register" style="font-size: 18px; padding: 20px;">追番</el-menu-item>
-      <el-menu-item index="/category" style="font-size: 18px; padding: 20px;">工具</el-menu-item>
+      <el-menu-item index="/category/2" style="font-size: 18px; padding: 20px;">追番</el-menu-item>
+      <el-menu-item index="/category/3" style="font-size: 18px; padding: 20px;">工具</el-menu-item>
       <el-menu-item index="/about" style="font-size: 18px; padding: 20px;">个人简介</el-menu-item>
     </div>
     <!-- 右侧登录/头像区域 -->
-    <div style="display: flex; align-items: center; padding-right: 20px;">
-      <template v-if="!isLogin">
-        <el-button type="primary" @click="showLogin = true">登录</el-button>
-      </template>
-      <template v-else>
-        <el-dropdown @command="handleCommand">
-          <span class="el-dropdown-link" style="cursor: pointer;">
-            <el-avatar :src="avatarUrl" />
-          </span>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </template>
+    <div>
+      <el-button v-if="!isLoggedIn" type="primary" @click="goToLogin">登录</el-button>
+      <el-dropdown v-else>
+      <span class="el-dropdown-link">
+        <el-avatar :src="user.avatar || defaultAvatar" size="small" />
+      </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </el-menu>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import { onMounted } from "vue";
-import { ref } from 'vue';
+import { ref, computed } from 'vue'
 const $route = useRoute()
+const router = useRouter()  // 它不会显式引入 router/index.js 文件，所以不会形成循环依赖。
 onMounted(() => { console.log("导航栏已经加载", new Date()) })
 
-const showLogin = ref(false);
-const isLogin = ref(!!localStorage.getItem('token'));
-const avatarUrl = ref(localStorage.getItem('avatar') || '');
+const user = ref(JSON.parse(localStorage.getItem('user')) || {})
+const isLoggedIn = computed(() => !!user.value.username)
+const defaultAvatar = "C:\\Users\\Thinkbook\\Pictures\\Screenshots\\屏幕截图 2025-01-23 130604.png"
 
-// 登录成功后更新状态
-function onLoginSuccess({ token, avatar }) {
-  localStorage.setItem('token', token);
-  localStorage.setItem('avatar', avatar || '');
-  isLogin.value = true;
-  avatarUrl.value = avatar;
+function goToLogin() {
+  router.push('/login')
 }
 
-// 退出登录
-function handleCommand(command) {
-  if (command === 'logout') {
-    localStorage.removeItem('token');
-    localStorage.removeItem('avatar');
-    isLogin.value = false;
-    avatarUrl.value = '';
-  }
+function logout() {
+  localStorage.removeItem('user')
+  location.reload()
 }
 </script>
 

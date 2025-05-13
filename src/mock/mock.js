@@ -1,6 +1,7 @@
 // src/mock/mock.js
 import MockAdapter from 'axios-mock-adapter'
 import axios from '../services/axios'
+import Mock from 'mockjs'
 
 // （注意mock拦的是去掉 axios的`/api` 前缀后的路径）
 // 创建 Mock 实例
@@ -69,7 +70,12 @@ const comments = {
     1: [
         { id: 1, post_id: 1, nickname: 'Tom', content: '写得太棒了！', create_time: '2025-04-18 10:00' }
     ],
-    2: []
+    2: [
+        { id: 2, post_id: 2, nickname: 'Jack', content: '写得太操蛋棒了！', create_time: '2025-04-19 10:00' }
+    ],
+    3: [
+        { id: 3, post_id: 3, nickname: 'Jerry', content: '写得太他妈棒了！', create_time: '2025-04-20 10:00' }
+    ]
 }
 
 const stats = {
@@ -121,3 +127,11 @@ mock.onPost(/\/posts\/\d+\/comments/).reply(config => {
     return [200, { success: true, comment: newComment }] // 返回新评论数据
 })
 
+mock.onPost('/api/upload/avatar').reply(config => {
+    return [
+        200,
+        {
+            url: "/good.png"
+        }
+    ]
+})

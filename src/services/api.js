@@ -15,3 +15,10 @@ export const postComment = (id, data) => axios.post(`/posts/${id}/comments`, dat
 
 // 站点统计
 export const getStats = () => axios.get('/stats')
+
+// 文件相关
+export const uploadAvatar = (formData) => axios.post('/api/upload/avatar', formData, {
+    headers: {
+        'Content-Type': 'multipart/form-data'
+    }
+})

@@ -17,7 +17,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getPostById, getAllCategories } from '@/services/api'
+import { getPostById, getAllCategories } from '@/services/api.js'
 import BlogCard from '@/components/BlogCard.vue'
 import CommentSection from '@/components/CommentSection.vue' // 引入评论区组件
 import MarkdownIt from 'markdown-it'

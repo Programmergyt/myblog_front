@@ -1,3 +1,4 @@
+// src/views/CategoryList.vue
 <template>
   <div class="common-layout">
       <h2 style="font-size: 40px;">{{ currentCategoryName }}</h2>
@@ -11,36 +12,32 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import BlogCard from '@/components/BlogCard.vue'
-import {getPostsByCategoryId, getAllCategories} from '@/services/api'
+import {getPostsByCategoryId, getAllCategories} from '@/services/api.js'
 
 const posts = ref([])
 const currentCategoryName = ref('')
 const categoriesMap = ref({})
 
 const route = useRoute()
-const categoryId = parseInt(route.params.categoryId)
 
-onMounted(async () => {
+// 将数据加载逻辑提取为函数
+const loadData = async (categoryId) => {
   try {
-    // 同时获取文章列表和所有分类
     const [postRes, categoryRes] = await Promise.all([
       getPostsByCategoryId(categoryId),
       getAllCategories()
     ])
 
-    // 构建 id -> name 映射表
     categoriesMap.value = categoryRes.reduce((map, cat) => {
       map[cat.id] = cat.name
       return map
     }, {})
 
-    // 设置当前分类名
     currentCategoryName.value = categoriesMap.value[categoryId] || '未知分类'
 
-    // 将每篇文章中的 category ID 转换为分类名
     posts.value = postRes.map(post => ({
       ...post,
       categoryNames: post.categories.map(id => categoriesMap.value[id] || '未知')
@@ -48,7 +45,19 @@ onMounted(async () => {
   } catch (e) {
     console.error('加载分类文章失败', e)
   }
+}
+
+// 初始加载
+onMounted(() => {
+  const categoryId = route.params.categoryId
+  loadData(categoryId)
 })
+
+// 路由变化时重新加载
+watch(() => route.params.categoryId, (newId) => {
+  loadData(newId)
+})
+
 </script>
 
 <style scoped>
