@@ -26,7 +26,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="handleRegister">注册</el-button>
-        <el-button @click="goToLogin">去登录</el-button>
+        <el-button @click="router.push('/login')">去登录</el-button>
       </el-form-item>
     </el-form>
   </el-card>
@@ -35,14 +35,12 @@
 <script setup>
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { uploadAvatar } from '@/services/api'
+import { uploadImage } from '@/services/api'
+import { register } from '@//services/api'
 
 const router = useRouter()
-
 const defaultAvatar = "/images/personal_icon.jpg"
-
 const form = reactive({
   username: '',
   password: '',
@@ -51,41 +49,41 @@ const form = reactive({
   avatar: ''
 })
 
-function handleUploadSuccess(response) {
-  form.avatar = response.url
-}
-
+// 注册功能
 async function handleRegister() {
   if (form.password !== form.confirmPassword) {
     ElMessage.warning('两次密码不一致')
     return
   }
+  if (!form.username || !form.password || !form.email) {
+    ElMessage.warning('请填写完整信息')
+    return
+  }
   try {
+    // 拿出除了确认密码之外的属性
     const { confirmPassword, ...user } = form
-    await axios.post('/api/auth/register', user)
+    await register(user) // 使用统一 API 方法
     ElMessage.success('注册成功，请登录')
     await router.push('/login')
   } catch (err) {
-    ElMessage.error(err.response?.data?.message || '注册失败')
+    ElMessage.error(err.response?.data?.message || '注册失败:'+err.message)
   }
 }
 
-// 自定义上传逻辑
+
+// 上传图片
 const customUpload = async (options) => {
   const formData = new FormData()
   formData.append('file', options.file)
-
   try {
-    const res = await uploadAvatar(formData)
-    handleUploadSuccess(res)
+    const res = await uploadImage(formData)
+    console.log("上传成功，头像地址：", res.data.data.url)
+    form.avatar = res.data.data.url
   } catch (err) {
     ElMessage.error('头像上传失败')
   }
 }
 
-function goToLogin() {
-  router.push('/login')
-}
 </script>
 
 <style scoped>

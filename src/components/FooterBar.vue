@@ -31,13 +31,14 @@ const updateUptime = (uptimeSeconds) => {
 onMounted(async () => {
   try {
     const response = await getStats()
+    console.log('获取统计信息成功', response.data)
     stats.value = {
-      totalPosts: response.data.total_posts,
-      totalWords: response.data.total_words,
-      uniqueVisitors: response.data.unique_visitors,
-      totalViews: response.data.total_views
+      totalPosts: response.data.data.total_posts,
+      totalWords: response.data.data.total_words,
+      uniqueVisitors: response.data.data.unique_visitors,
+      totalViews: response.data.data.total_views
     }
-    updateUptime(response.data.uptime_seconds)
+    updateUptime(response.data.data.uptime_seconds)
   } catch (error) {
     console.error('Failed to fetch stats:', error)
   }

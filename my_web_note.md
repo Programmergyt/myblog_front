@@ -8,8 +8,12 @@ DELETE 通过 URL 中的路径参数传递要删除的资源 ID
 
 上传博客的过程是，前端先上传图片，后端返回图片URL，前端把URL插入markdown，然后再把markdown发给后端
 
-✅ 开发初期：用 Postman 快速测试接口是否通、是否符合预期格式；
-✅ 接口开发完成后：写 Spring Boot 单元测试类
+前端需要知道后端什么内容？【controller、POJO】、【interceptor】、【exceptionHandler】、【webconfig】
+前端需要和后端对接的模块：mock,axios,api
+
+后端还需要添加的接口：
+* 用户信息接口（输入token）
+* 网站统计数据接口
 
 | 操作类型     | 正确的返回类型 | 含义            |
 |----------|---------|---------------|
@@ -18,14 +22,17 @@ DELETE 通过 URL 中的路径参数传递要删除的资源 ID
 | `delete` | `int`   | 删除了多少行（可以是 0） |
 | `select` | `pojo`  | 实体类           |
 
+| 比较项       | 同步 vs 串行                              | 异步 vs 并行                            |
+| --------- | ------------------------------------- | ----------------------------------- |
+| ✅ **共同点** | 都是“按顺序执行”的体现（一个完成了才开始下一个）             | 都可以让程序“同时处理多个事情”                    |
+| ❌ **不同点** | **同步**关注“是否等待任务完成”，**串行**关注“任务是否同时进行” | **异步**是“能继续做别的”，**并行**是“真的多个任务同时运行” |
+| 举例        | 同步串行就是逐步做事（如流水线），同步并行少见               | 异步串行是常见的 JS 模式，异步并行则是 Promise.all   |
+
 
 # 模块与功能设计
-![](img/1.png)
 ## 1.博客模块
-![查询与发布](img/2.png)
-![查看](img/3.png)
 ### 功能
-1-3需要登录，4-7不用登录
+1-3需要登录，4-8不用登录，9-10需要管理员
 1. 用户发布博客
 2. 用户删除自己的博客
 3. 用户改动自己的博客
@@ -33,10 +40,13 @@ DELETE 通过 URL 中的路径参数传递要删除的资源 ID
 5. 按博客TAG查询
 6. 按博客发布用户查询
 7. 按博客发布时间查询
+8. 查询tag
+9. 新增tag
+10. 删除tag
+
 ### 数据库
 博客、TAG、用户
 ## 2.做饭模块
-![做饭](img/4.png)
 ### 功能
 1-4需要登录，5不用登录
 1. 用户添加菜谱（食材、步骤、用户、图片）
@@ -47,7 +57,6 @@ DELETE 通过 URL 中的路径参数传递要删除的资源 ID
 ### 数据库
 菜谱、食材、用户
 ## 3.追番模块
-![追番](img/5.png)
 ### 功能
 1-4需要登录，5不用登录
 1. 用户添加追番
@@ -58,7 +67,6 @@ DELETE 通过 URL 中的路径参数传递要删除的资源 ID
 ### 数据库
 番剧、用户
 ## 4.工具模块
-![工具](img/6.png)
 ### 功能
 不需要登录
 1. pdf合并pdf合并
@@ -231,31 +239,88 @@ private String name;
 
 ## 认证接口
 - `POST /api/auth/login` ：登录 ✅
-- `POST /api/auth/register` ：注册 
+  public Result<String> login(@RequestBody User user) {
+  User login_user = userService.login(user);
+  String token = JwtUtil.generateToken(login_user.getId().toString(), login_user.getRole());
+  return Result.success(token);
+  }
+- `POST /api/auth/register` ：注册
+  public Result<User> register(@RequestBody User user) {
+  User register_user = userService.register(user);
+  return Result.success(register_user);
+  }
 - `POST /api/auth/logout` ：登出 ✅ （需要登录）
-
+  public Result<Void> logout()
+  {
+  userService.logout();
+  return Result.success();
+  }
 ---
 
 ## 博客模块
 
 - `POST /api/blogs` （需要登录）✅
   - 新增博客
+    public Result<Blog> postBlog(@RequestBody  Blog blog) {
+    Blog output_blog = blogService.postBlog(blog);
+    return Result.success(output_blog);
+    }
 - `DELETE /api/blogs/{id}` （需要登录为管理员或者是自己的博客）✅
   - 删除自己的博客
+    public Result<Void> deleteBlog(@PathVariable Long id, HttpServletRequest request) {
+    blogService.deleteBlog(id, request);
+    return Result.success();
+    }
 - `PUT /api/blogs/{id}` （需要登录并且是自己的博客）✅
   - 修改自己的博客
+      public Result<Void> updateBlog(@PathVariable Long id, @RequestBody Blog blog) {
+        blogService.updateBlog(id, blog);
+        return Result.success();
+    }
 - `GET /api/blogs` ✅
   - 查询博客列表，支持标题/标签/用户/时间筛选
+    public Result<List<Blog>> getBlogs(@RequestParam(required = false) String title,
+    @RequestParam(required = false) Long tagId,
+    @RequestParam(required = false) Long userId,
+    @RequestParam(required = false) String startTime,
+    @RequestParam(required = false) String endTime) {
+    List<Blog> blogs = blogService.getBlogs(title, tagId, userId, startTime, endTime);
+    return Result.success(blogs);
+    }
 - `GET /api/blogs/{id}` ✅
   - 查看博客详情
-- `POST /api/blogs/upload` ✅ （需要登录）
-  - 上传博客图片
+    public Result<Blog> getBlogById(@PathVariable Long id) {
+    Blog blog = blogService.getBlogById(id);
+    return Result.success(blog);
+    }
+- `POST /api/blogs/upload` ✅ 
+  - 上传博客或头像图片
+      public Result<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) throws IOException {
+        String url = uploadService.uploadImage(file);
+        // 返回图片链接（可按前端编辑器要求定制格式）
+        Map<String, Object> result = new HashMap<>();
+        result.put("url", url);
+        result.put("success", 1); // Editor.md 等编辑器需要
+        return Result.success(result);
+    }
 - `POST /api/tags` （需要登录为管理员）✅
   - 新增tag
+    public Result<Tag> createTag(@RequestBody Tag tag, HttpServletRequest request) {
+    Tag created_tag = tagService.createTag(tag.getName(),request);
+    return Result.success(created_tag);
+    }
 - `DELETE /api/tags/{id}` （需要登录为管理员）✅
   - 删除tag
+    public Result<Void> deleteTag(@PathVariable Long id, HttpServletRequest request) {
+    tagService.deleteTag(id,request);
+    return Result.success();
+    }
 - `GET /api/tags`✅
   - 查询tag列表
+      public Result<List<Tag>> getAllTags() {
+        List<Tag> tags = tagService.getAllTags();
+        return Result.success(tags);
+    }
 ---
 
 ## 做饭模块

@@ -9,18 +9,27 @@ import Register from "@/pages/Register.vue";
 import Login from "@/pages/Login.vue";
 
 const routes = [
-    { path: '/', component: ContentLayout ,
-        children: [
-        { path: '/', component: BlogCatalogue },
-        { path: 'category',  component: Category},
-        { path: 'category/:categoryId',  component: CategoryList},
+    { path: '/', component: ContentLayout
+        ,children: [
+        // { path: '/', component: BlogCatalogue },
+        // { path: 'category',  component: Category},
+        // { path: 'category/:categoryId',  component: CategoryList},
         { path: 'about',  component: About },
-        { path: 'post/:postId',  component: BlogDetail},
-    ]},
+        // { path: 'post/:postId',  component: BlogDetail},
+        ]
+    },
     { path: '/register', component: Register},
     { path: '/login',  component: Login},
     { path: '/:catchAll(.*)', redirect: '/' }
 ]
+
+// 测试路由
+// const routes = [
+//     { path: '/register', component: Register},
+//     { path: '/',  component: Login},
+//     { path: '/:catchAll(.*)', redirect: '/' }
+// ]
+
 
 const router = createRouter({
     history: createWebHistory(),

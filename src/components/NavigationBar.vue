@@ -6,8 +6,6 @@
       :default-active="$route.path"
       style="display: flex; justify-content: space-between; align-items: center;"
   >
-    <!--    外层 el-menu 设置了 justify-content: space-between，保证两侧分布。-->
-    <!--    align-items: center 保证垂直居中对齐。-->
     <!-- 左侧菜单项容器 -->
     <div style="display: flex;">
       <el-menu-item index="/" style="font-size: 18px; padding: 20px;">博客</el-menu-item>
@@ -18,10 +16,10 @@
     </div>
     <!-- 右侧登录/头像区域 -->
     <div>
-      <el-button v-if="!isLoggedIn" type="primary" @click="goToLogin">登录</el-button>
+      <el-button v-if="!isLoggedIn" type="primary" @click="router.push('/login')">登录</el-button>
       <el-dropdown v-else>
       <span class="el-dropdown-link">
-        <el-avatar :src="user.avatar || defaultAvatar" size="small" />
+        <el-avatar :src="currentUser?.avatar || defaultAvatar" size="default" />
       </span>
         <template #dropdown>
           <el-dropdown-menu>
@@ -34,25 +32,48 @@
 </template>
 
 <script setup>
-import {useRoute, useRouter} from 'vue-router'
-import { onMounted } from "vue";
-import { ref, computed } from 'vue'
-const $route = useRoute()
-const router = useRouter()  // 它不会显式引入 router/index.js 文件，所以不会形成循环依赖。
-onMounted(() => { console.log("导航栏已经加载", new Date()) })
+import { useRoute, useRouter } from 'vue-router'
+import { watch, onMounted, ref } from 'vue'// 导入 Vue 的组合式 API：watch 用于监听响应式变量，onMounted 用于组件挂载后执行逻辑，ref 创建响应式数据
+import { ElMessage } from 'element-plus'// 导入 Element Plus 中的消息提示组件
+import { getCurrentUser } from "@/services/api.js"
 
-const user = ref(JSON.parse(localStorage.getItem('user')) || {})
-const isLoggedIn = computed(() => !!user.value.username)
-const defaultAvatar = "C:\\Users\\Thinkbook\\Pictures\\Screenshots\\屏幕截图 2025-01-23 130604.png"
+// 如果 ref 接收的是一个对象，它内部实际上会调用 reactive 来处理这个对象，而reactive的作用就是监听和反应
+const isLoggedIn = ref(false)// 创建响应式变量 isLoggedIn，用于判断用户是否登录
+const $route = useRoute()// 获取当前路由对象
+const router = useRouter()// 获取路由实例，用于编程式导航
+const defaultAvatar = "/images/personal_icon.jpg"// 默认头像路径
+const currentUser = ref(null)// 当前登录用户信息
 
-function goToLogin() {
-  router.push('/login')
-}
-
+// 退出登录函数，清除用户信息，更新状态
 function logout() {
-  localStorage.removeItem('user')
-  location.reload()
+  localStorage.removeItem('CurrentUser')
+  localStorage.removeItem('authToken')
+  currentUser.value = null
+  isLoggedIn.value = false
+  ElMessage.success('退出登录成功')
 }
+
+// 监听路由变化，每次路由变更时都更新登录状态（比如页面跳转后重新渲染时）
+watch(() => $route.fullPath, () => {
+  const stored = localStorage.getItem('CurrentUser')
+  isLoggedIn.value = !!stored  // 如果存在用户信息，则设为 true
+  currentUser.value = stored ? JSON.parse(stored) : null  // 更新用户信息
+})
+
+// 页面加载时获取当前用户信息
+onMounted(async () => {
+  console.log("导航栏已经加载", new Date())
+  try {
+    const res = await getCurrentUser()
+    currentUser.value = res.data.data
+    localStorage.setItem('CurrentUser', JSON.stringify(currentUser.value))
+    isLoggedIn.value = true
+  } catch (error) {
+    currentUser.value = null
+    isLoggedIn.value = false
+    console.warn('获取用户失败', error)
+  }
+})
 </script>
 
 <style scoped>

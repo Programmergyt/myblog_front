@@ -3,9 +3,12 @@
   <div class="layout">
     <NavigationBar />
     <el-main class="main-content">
-      <transition name="fade" mode="out-in">
-        <router-view />
-      </transition>
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+<!--          等价于<component v-bind:is="Component" />-->
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </el-main>
     <FooterBar />
   </div>

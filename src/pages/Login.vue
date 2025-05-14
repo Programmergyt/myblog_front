@@ -10,39 +10,42 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="handleLogin">登录</el-button>
-        <el-button @click="goToRegister">去注册</el-button>
+        <el-button @click="router.push('/register')">去注册</el-button>
       </el-form-item>
     </el-form>
   </el-card>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import {reactive} from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { login,getCurrentUser } from '@/services/api';
+import {ElMessage} from "element-plus";
 
+const router = useRouter()
 const form = reactive({
   username: '',
   password: ''
 })
 
-const router = useRouter()
-
+// 登录函数
 async function handleLogin() {
   try {
-    const res = await axios.post('/api/auth/login', form)
-    localStorage.setItem('user', JSON.stringify(res.data))
+    const res = await login(form)
+    // 注意：这里 res.data 是 token 字符串，不是用户对象！
+    // 如果你想存储用户信息，应该从响应中提取或通过 getUserInfo 接口获取
+    localStorage.setItem('authToken', res.data.data) // 存储 token
+    let CurrentUser;
+    CurrentUser = await getCurrentUser()
+    CurrentUser = CurrentUser.data.data
+    localStorage.setItem('CurrentUser', CurrentUser)
     ElMessage.success('登录成功')
-    router.push('/')
+    await router.push('/')
   } catch (err) {
     ElMessage.error(err.response?.data?.message || '登录失败')
   }
 }
 
-function goToRegister() {
-  router.push('/register')
-}
 </script>
 
 <style scoped>
