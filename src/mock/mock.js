@@ -7,8 +7,6 @@ import Mock from 'mockjs'; // 引入 mockjs 用于生成随机数据
 // 注意：mock 拦截的是 baseURL ('/api') 之后的部分
 const mock = new MockAdapter(axiosInstance, { delayResponse: 300 }); // 模拟 300ms 延迟
 
-
-
 // --- 模拟后端 Result<T> 结构 ---
 const Result = {
     success: (data = null) => ({ code: 1, msg: 'success', data }),
@@ -21,8 +19,6 @@ const Result = {
     serverError: (msg = '系统错误，请联系管理员') => ({ code: 500, msg, data: null }), // 模拟通用 Exception
 };
 
-
-
 // --- 模拟数据库和状态 ---
 let db = {
     users: [
@@ -32,10 +28,17 @@ let db = {
     tags: [
         { id: 1, name: '技术' },
         { id: 2, name: '生活' },
-        { id: 3, name: '随笔' }
+        { id: 3, name: '随笔' },
+        { id: 4, name: '哈气' },
+        { id: 5, name: '耄耋' },
+        { id: 6, name: '麻麻' },
+        { id: 7, name: '爸爸' },
+        { id: 8, name: '牛子' },
+        { id: 9, name: '索索' },
+
     ],
     blogs: [
-        { id: 1, userId: 1, title: Mock.Random.ctitle(5, 15), content: Mock.Random.cparagraph(10, 20), createTime: Mock.Random.datetime(), updateTime: Mock.Random.datetime(), tagIds: [1] },
+        { id: 1, userId: 1, title: Mock.Random.ctitle(5, 15), content: "## 牛马接班人 ![](/images/pic1.png)", createTime: Mock.Random.datetime(), updateTime: Mock.Random.datetime(), tagIds: [1] },
         { id: 2, userId: 2, title: Mock.Random.ctitle(5, 15), content: Mock.Random.cparagraph(15, 25), createTime: Mock.Random.datetime(), updateTime: Mock.Random.datetime(), tagIds: [2, 3] }
     ],
     blog_tags: [
@@ -60,7 +63,7 @@ mock.onGet('/stats').reply(config =>{
 
 let nextUserId = 3;
 let nextBlogId = 3;
-let nextTagId = 4;
+let nextTagId = 10;
 // ... 其他 ID 计数器
 
 // 模拟 JWT token (简单模拟，实际应更复杂)

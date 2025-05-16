@@ -1,26 +1,30 @@
 <template>
-<!--  <el-card shadow="hover" class="blog-card" @click="$router.push(`/post/${post.id}`)">-->
-<!--    <h2>{{ post.title }}</h2>-->
-<!--    <p class="summary">{{ post.summary }}</p>-->
-<!--    <div class="meta">-->
-<!--      <el-tag type="info">{{ post.create_time }}</el-tag>-->
-<!--      &lt;!&ndash; 显示分类名 &ndash;&gt;-->
-<!--      <el-tag-->
-<!--          v-for="tag in post.categoryNames"-->
-<!--          :key="tag"-->
-<!--          type="success"-->
-<!--          class="tag"-->
-<!--      >-->
-<!--        {{ tag }}-->
-<!--      </el-tag>-->
-<!--    </div>-->
-<!--  </el-card>-->
+  <el-card
+      shadow="hover"
+      class="blog-card"
+      @click="router.push(`/post/${post.id}`)"
+  >
+    <h2>{{ post.title }}</h2>
+    <div class="meta">
+      <el-tag type="info">{{ post.createTime }}</el-tag>
+      <el-tag
+          v-for="tag in post.categoryNames"
+          :key="tag"
+          type="success"
+          class="tag"
+      >
+        {{ tag }}
+      </el-tag>
+    </div>
+  </el-card>
 </template>
 
 <script setup>
-// defineProps({
-//   post: Object  // post 中包含 title、summary、create_time、categoryNames
-// })
+import { useRouter } from 'vue-router'
+const router = useRouter()
+defineProps({
+  post: Object,  // post 中包含 title、summary、create_time、categoryNames
+})
 </script>
 
 <style scoped>
@@ -28,6 +32,7 @@
   margin-bottom: 20px;
   cursor: pointer;
   min-width: 600px;
+  width: 50%;
 }
 .summary {
   margin: 10px 0;

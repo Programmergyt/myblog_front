@@ -9,11 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.8.4",
     "axios-mock-adapter": "^2.1.0",
     "element-plus": "^2.9.7",
     "markdown-it": "^14.1.0",
     "marked": "^15.0.8",
+    "md-editor-v3": "^5.5.1",
     "mockjs": "^1.1.0",
     "vue": "^3.5.13",
     "vue-markdown": "^2.1.3",

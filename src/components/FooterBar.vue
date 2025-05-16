@@ -31,7 +31,6 @@ const updateUptime = (uptimeSeconds) => {
 onMounted(async () => {
   try {
     const response = await getStats()
-    console.log('获取统计信息成功', response.data)
     stats.value = {
       totalPosts: response.data.data.total_posts,
       totalWords: response.data.data.total_words,
@@ -39,6 +38,7 @@ onMounted(async () => {
       totalViews: response.data.data.total_views
     }
     updateUptime(response.data.data.uptime_seconds)
+    console.log('底部栏已加载')
   } catch (error) {
     console.error('Failed to fetch stats:', error)
   }

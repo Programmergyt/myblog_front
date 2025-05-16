@@ -85,7 +85,7 @@ export const uploadImage = (formData) => axios.post('/blogs/upload', formData, {
 /**
  * 创建新标签 (需要管理员权限)
  * @param {object} tagData - 包含 name 的标签对象
- * @returns {Promise<object>} - 返回创建成功的标签对象
+ * @returns {Promise<object>} - 返回创建成功的标签对象{id,name}
  */
 export const createTag = (tagData) => axios.post('/tags', tagData);
 

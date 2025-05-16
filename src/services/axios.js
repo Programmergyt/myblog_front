@@ -1,5 +1,6 @@
 // src/services/axios.js
 import axios from 'axios';
+import {ElMessage, ElMessageBox} from "element-plus";
 
 // 创建 axios 实例
 const instance = axios.create({
@@ -16,8 +17,6 @@ instance.interceptors.request.use(config => {
         '/auth/register',
         '/stats',
         '/blogs/upload',
-        // 根据 LoginCheckInterceptor 放行 GET /api/blogs 和 GET /api/tags
-        // 注意：这里判断的是 baseURL 之后的部分
         { method: 'get', url: /^\/blogs(\/\d+)?$/ }, // 匹配 /blogs 或 /blogs/123
         { method: 'get', url: '/tags' },
         // 其他公共接口...
@@ -44,7 +43,6 @@ instance.interceptors.request.use(config => {
         }
         return false;
     });
-
 
     // 如果不是公共路径，则尝试从 localStorage 获取 token 并添加到请求头
     if (!isPublic) {
@@ -87,21 +85,24 @@ instance.interceptors.response.use(response => {
         } else {
             // 请求失败 (code !== 1)
             console.error('API Error:', res.msg || 'Unknown error');
-
             // 检查是否是未授权错误 (根据 LoginCheckInterceptor 返回的格式)
             if (res.code === 401 || res.msg === '未登录' || res.msg === '令牌无效或已过期') {
                 console.warn('Authentication required or token expired. Redirecting to login.');
                 // 清除本地存储的 token
                 localStorage.removeItem('authToken');
-                // 重定向到登录页面 (根据你的路由配置修改路径)
-                // 为了避免在非浏览器环境（如 Node.js 测试）出错，检查 window 对象是否存在
-                if (typeof window !== 'undefined') {
-                    window.location.href = '/login'; // 或者使用路由库的跳转方法 router.push('/login')
-                }
+                // 弹出确认框，等用户点击后再跳转
+                // ElMessageBox.alert('操作标签需要登录，请先登录再继续', '提示', {
+                //     confirmButtonText: '去登录',
+                //     type: 'warning',
+                // }).then(() => {
+                //     // 点击“去登录”按钮后跳转
+                //     if (typeof window !== 'undefined') {
+                //         window.location.href = '/login'
+                //     }
+                // })
                 // 返回一个被拒绝的 Promise，中断当前的调用链
                 return Promise.reject(new Error(res.msg || 'Authentication Failed'));
             }
-
             // 其他业务错误，将后端返回的 msg 作为错误信息 reject
             // 可以根据 res.code 做更细致的处理，例如区分参数错误、资源未找到等
             // switch (res.code) {

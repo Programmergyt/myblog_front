@@ -22,7 +22,9 @@
 </template>
 
 <script setup>
+import {onMounted} from "vue";
 
+onMounted(()=>{console.log("个人介绍已经加载")})
 </script>
 
 

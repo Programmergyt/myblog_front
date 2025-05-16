@@ -28,6 +28,7 @@ const form = reactive({
   password: ''
 })
 
+console.log("登录页面已加载")
 // 登录函数
 async function handleLogin() {
   try {

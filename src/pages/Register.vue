@@ -46,9 +46,10 @@ const form = reactive({
   password: '',
   confirmPassword: '',
   email: '',
-  avatar: ''
+  avatar: defaultAvatar,
 })
 
+console.log("注册页面加载")
 // 注册功能
 async function handleRegister() {
   if (form.password !== form.confirmPassword) {
@@ -64,7 +65,7 @@ async function handleRegister() {
     const { confirmPassword, ...user } = form
     await register(user) // 使用统一 API 方法
     ElMessage.success('注册成功，请登录')
-    await router.push('/login')
+    // await router.push('/login')
   } catch (err) {
     ElMessage.error(err.response?.data?.message || '注册失败:'+err.message)
   }
@@ -75,6 +76,7 @@ async function handleRegister() {
 const customUpload = async (options) => {
   const formData = new FormData()
   formData.append('file', options.file)
+  console.log("开始上传头像")
   try {
     const res = await uploadImage(formData)
     console.log("上传成功，头像地址：", res.data.data.url)
