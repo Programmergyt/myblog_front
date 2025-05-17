@@ -90,29 +90,9 @@ instance.interceptors.response.use(response => {
                 console.warn('Authentication required or token expired. Redirecting to login.');
                 // 清除本地存储的 token
                 localStorage.removeItem('authToken');
-                // 弹出确认框，等用户点击后再跳转
-                // ElMessageBox.alert('操作标签需要登录，请先登录再继续', '提示', {
-                //     confirmButtonText: '去登录',
-                //     type: 'warning',
-                // }).then(() => {
-                //     // 点击“去登录”按钮后跳转
-                //     if (typeof window !== 'undefined') {
-                //         window.location.href = '/login'
-                //     }
-                // })
                 // 返回一个被拒绝的 Promise，中断当前的调用链
                 return Promise.reject(new Error(res.msg || 'Authentication Failed'));
             }
-            // 其他业务错误，将后端返回的 msg 作为错误信息 reject
-            // 可以根据 res.code 做更细致的处理，例如区分参数错误、资源未找到等
-            // switch (res.code) {
-            //     case 0: // 通用失败
-            //         // ...
-            //     case 400: // 假设 400 是参数错误
-            //         // ...
-            //     case 404: // 假设 404 是资源未找到
-            //         // ...
-            // }
             return Promise.reject(new Error(res.msg || 'API request failed'));
         }
     } else {

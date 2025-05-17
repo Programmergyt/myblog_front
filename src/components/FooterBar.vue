@@ -3,7 +3,7 @@
     <div class="footer-text">
       备案号：京ICP备12345678号｜运行时间：{{ uptime }}｜
       文章数：{{ stats.totalPosts }}｜总字数：{{ stats.totalWords }}｜
-      访问人数：{{ stats.uniqueVisitors }}｜总访问量：{{ stats.totalViews }}
+<!--      访问人数：{{ stats.uniqueVisitors }}｜总访问量：{{ stats.totalViews }}-->
     </div>
   </el-footer>
 </template>
@@ -16,16 +16,16 @@ const stats = ref({
   totalPosts: 0,
   totalWords: 0,
   uniqueVisitors: 0,
-  totalViews: 0
+  uptime_seconds: 0
 })
 
-const uptime = ref('0天 0小时 0分钟')
+const uptime = ref('0天 0小时')
 
 const updateUptime = (uptimeSeconds) => {
   const minutes = Math.floor(uptimeSeconds / 60)
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
-  uptime.value = `${days}天 ${hours % 24}小时 ${minutes % 60}分钟`
+  uptime.value = `${days}天 ${hours % 24}小时`
 }
 
 onMounted(async () => {
@@ -35,7 +35,7 @@ onMounted(async () => {
       totalPosts: response.data.data.total_posts,
       totalWords: response.data.data.total_words,
       uniqueVisitors: response.data.data.unique_visitors,
-      totalViews: response.data.data.total_views
+      totalViews: response.data.data.total_views,
     }
     updateUptime(response.data.data.uptime_seconds)
     console.log('底部栏已加载')

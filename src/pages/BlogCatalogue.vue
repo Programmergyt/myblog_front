@@ -1,5 +1,5 @@
 <template>
-  <el-container style="padding: 0; height: calc(100vh - 40px);">
+  <el-container style="padding: 0px; height: calc(100vh - 40px);">
     <el-aside width="250px" class="aside-container">
       <TagSidebar
           v-model:selectedTags="selectedTagIds"
@@ -8,9 +8,9 @@
       />
     </el-aside>
 
-    <el-main style="/* width: 800px; */ padding-left: 20px; overflow-y: auto;">
+    <el-main style="padding-left: 20px; overflow-y: auto;">
       <div class="actions-header">
-        <el-button type="primary" @click="router.push('/blogform')" :icon="EditPen">
+        <el-button type="primary" @click="goToBlogForm" :icon="EditPen">
           写新博客
         </el-button>
       </div>
@@ -29,28 +29,53 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue';
-import {useRouter} from 'vue-router'; // 1. 引入 useRouter
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import BlogCard from '@/components/BlogCard.vue';
-import {getBlogs} from '@/services/api.js';
-import {ElMessage, ElButton} from 'element-plus'; // 引入 ElButton (如果需要)
-import {EditPen} from '@element-plus/icons-vue'; // 引入图标
+import { getBlogs, getCurrentUser } from '@/services/api.js'; // 1. 引入 getCurrentUser
+import { ElMessage, ElButton, ElMessageBox } from 'element-plus'; // 引入 ElMessageBox
+import { EditPen } from '@element-plus/icons-vue';
 import TagSidebar from '@/components/TagSideBar.vue';
 
-const router = useRouter(); // 2. 获取 router 实例
+const router = useRouter();
 
-// 存储从 API 获取的所有文章
 const allPostsFromApi = ref([]);
-// 存储当前选中的标签 ID 列表
 const selectedTagIds = ref([]);
-
-// 从 TagSidebar 获取的数据
 const availableTagsForParent = ref([]);
 const idToNameCategoriesMap = ref({});
-
 const firstTagsLoad = ref(true);
 
-const handleTagsRefreshed = ({availableTags, tagsMap}) => {
+// 2. 添加 currentUser ref
+const currentUser = ref(null);
+const isCheckingAuth = ref(false); // 可选，用于表示正在获取用户信息
+
+// 3. 获取当前登录用户信息的方法
+const fetchCurrentUser = async () => {
+  isCheckingAuth.value = true;
+  try {
+    const userResponse = await getCurrentUser(); // 调用 /api/auth/me
+    // axios.js 拦截器会对 /auth/me 的未登录情况(code:401)返回 Promise.reject
+    // 所以如果能走到这里，说明请求本身没被拦截器 reject (例如，publicPath 或者拦截器逻辑修改了)
+    // 并且需要检查业务 code
+    if (userResponse && userResponse.data && userResponse.data.code === 1 && userResponse.data.data) {
+      currentUser.value = userResponse.data.data;
+      console.log('BlogCatalogue: Current user:', currentUser.value);
+    } else {
+      // 可能是 code 非1，或者请求被拦截器放行但业务上未登录
+      console.warn('BlogCatalogue: 获取当前用户信息失败或未登录:', userResponse?.data?.msg);
+      currentUser.value = null;
+    }
+  } catch (error) {
+    // 如果 getCurrentUser() Promise 被 reject (例如 axios 拦截器中因为 /auth/me 返回 401 而 reject)
+    console.warn('BlogCatalogue: 获取当前用户信息时发生错误或未登录 (catch block):', error.message);
+    currentUser.value = null; // 明确表示未登录
+  } finally {
+    isCheckingAuth.value = false;
+  }
+};
+
+
+const handleTagsRefreshed = ({ availableTags, tagsMap }) => {
   availableTagsForParent.value = availableTags;
   idToNameCategoriesMap.value = tagsMap;
 
@@ -59,6 +84,25 @@ const handleTagsRefreshed = ({availableTags, tagsMap}) => {
     firstTagsLoad.value = false;
   }
 };
+
+onMounted(async () => {
+  console.log('博客目录组件已加载');
+  await fetchCurrentUser(); // 4. 在 onMounted 中调用
+
+  try {
+    const postRes = await getBlogs(null);
+    const postResData = postRes.data.data; // 假设拦截器已处理外层包装
+
+    allPostsFromApi.value = postResData.map(post => ({
+      ...post,
+      tagIds: (post.tagIds || []).map(id => String(id)),
+    }));
+
+  } catch (e) {
+    console.error('加载首页数据失败:', e);
+    ElMessage.error('加载数据失败，请稍后重试');
+  }
+});
 
 const postsToDisplay = computed(() => {
   let filteredPosts = [];
@@ -74,52 +118,63 @@ const postsToDisplay = computed(() => {
       return post.tagIds.some(tagId => selectedTagIds.value.includes(tagId));
     });
   } else {
-    // 如果没有标签，也没有已选标签(比如初始状态)，但有文章，则显示所有文章
     filteredPosts = [...allPostsFromApi.value];
   }
 
   return filteredPosts.map(post => ({
     ...post,
     categoryNames: (post.tagIds || []).map(id => idToNameCategoriesMap.value[String(id)] || '未知分类')
-  })).sort((a, b) => new Date(b.createTime) - new Date(a.createTime)); // 按创建时间降序排序
+  })).sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
 });
 
-onMounted(async () => {
-  try {
-    const postRes = await getBlogs(null);
-    const postResData = postRes.data.data;
-
-    allPostsFromApi.value = postResData.map(post => ({
-      ...post,
-      tagIds: (post.tagIds || []).map(id => String(id)),
-    }));
-    console.log('博客目录组件已加载');
-  } catch (e) {
-    console.error('加载首页数据失败:', e);
-    ElMessage.error('加载数据失败，请稍后重试');
+// 5. 修改跳转方法
+const goToBlogForm = async () => {
+  // 确保用户信息已经尝试获取完毕
+  if (isCheckingAuth.value) {
+    ElMessage.info('正在检查用户状态，请稍候...');
+    return;
   }
-});
+
+  if (currentUser.value) { // 用户已登录
+    router.push('/blogform');
+  } else { // 用户未登录
+    ElMessageBox.confirm(
+        '您需要登录才能写新博客，是否前往登录页面？',
+        '提示',
+        {
+          confirmButtonText: '去登录',
+          cancelButtonText: '取消',
+          type: 'warning',
+          draggable: true,
+        }
+    ).then(() => {
+      router.push('/login');
+    }).catch(() => {
+      ElMessage.info('已取消操作');
+    });
+  }
+};
 
 </script>
 
 <style scoped>
 .aside-container {
-  padding-right: 0;
+  padding-right: 0px;
   border-right: 1px solid #e0e0e0;
-  /* 让 TagSidebar 内部可以滚动，而不是整个 aside 滚动 */
-  display: flex; /* 新增 */
-  flex-direction: column; /* 新增 */
+  display: flex;
+  flex-direction: column;
 }
-
-/* 如果 TagSidebar 内部没有很好地处理其高度和滚动，可能需要给 TagSidebar 组件本身或其包装器显式的高度 */
-.aside-container > :deep(.sidebar-content) { /* 假设 TagSidebar 的根元素 class 是 sidebar-content */
+.aside-container > :deep(.sidebar-content) {
   flex-grow: 1;
   overflow-y: auto;
 }
 
+.el-main {
+  height: 100%;
+}
 
 .actions-header {
   margin-bottom: 20px;
-  text-align: right; /* 让按钮靠右 */
+  text-align: right;
 }
 </style>

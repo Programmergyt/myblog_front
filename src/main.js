@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import ElementPlus from 'element-plus'
-import '@/mock/mock.js' // ‘@/’表示src/文件夹
+// import '@/mock/mock.js' // ‘@/’表示src/文件夹
 import 'element-plus/dist/index.css'
 
 const app = createApp(App)
