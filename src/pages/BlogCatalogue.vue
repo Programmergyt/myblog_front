@@ -31,6 +31,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import dayjs from 'dayjs'
 import BlogCard from '@/components/BlogCard.vue';
 import { getBlogs, getCurrentUser } from '@/services/api.js'; // 1. 引入 getCurrentUser
 import { ElMessage, ElButton, ElMessageBox } from 'element-plus'; // 引入 ElMessageBox
@@ -120,11 +121,10 @@ const postsToDisplay = computed(() => {
   } else {
     filteredPosts = [...allPostsFromApi.value];
   }
-
   return filteredPosts.map(post => ({
     ...post,
-    categoryNames: (post.tagIds || []).map(id => idToNameCategoriesMap.value[String(id)] || '未知分类')
-  })).sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+    categoryNames: (post.tagIds || []).map(id => idToNameCategoriesMap.value[String(id)] || '未知分类'),
+  }));
 });
 
 // 5. 修改跳转方法

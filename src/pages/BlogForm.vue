@@ -97,6 +97,7 @@ const handleUploadImg = async (files, callback) => {
     formData.append('file', file);
     try {
       const response = await uploadImage(formData);
+      console.log('图片上传response:', response);
       if (response && response.data && response.data.code === 1 && response.data.data && response.data.data.url) {
         return response.data.data.url;
       } else {
@@ -137,9 +138,11 @@ const handlePublish = async () => {
     title: articleTitle.value,
     content: articleContent.value,
     tagIds: selectedTagIds.value,
+    userId: currentUser.value?.id,
   };
   try {
-    const response = await postBlog(blogData);
+    console.log('发布数据:', blogData)
+    const response = await postBlog(blogData)
     if (response && response.data && response.data.code === 1) {
       ElMessage.success('文章发布成功！');
       articleTitle.value = '';

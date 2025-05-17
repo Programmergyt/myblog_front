@@ -191,19 +191,19 @@ mock.onPost('/blogs').reply(config => {
     const auth = checkAuth(config);
     if (!auth.authenticated) return [200, auth.reason]; // 返回模拟的 401 Result
 
-    const { title, content, tagIds = [] } = JSON.parse(config.data);
+    const { title, content, tagIds,userId = [] } = JSON.parse(config.data);
     if (!title || !content) {
         return [200, Result.badRequest('标题和内容不能为空')];
     }
 
     const newBlog = {
         id: nextBlogId++,
-        userId: auth.user.userId,
-        title,
-        content,
+        userId: userId,
+        title:title,
+        content:content,
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
-        tagIds // 存储关联的 tag ID
+        tagIds:tagIds // 存储关联的 tag ID
     };
     db.blogs.push(newBlog);
 

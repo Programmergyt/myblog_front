@@ -16,7 +16,7 @@ const stats = ref({
   totalPosts: 0,
   totalWords: 0,
   uniqueVisitors: 0,
-  uptime_seconds: 0
+  uptimeSeconds: 0
 })
 
 const uptime = ref('0天 0小时')
@@ -31,13 +31,14 @@ const updateUptime = (uptimeSeconds) => {
 onMounted(async () => {
   try {
     const response = await getStats()
+    console.log(response.data.data)
     stats.value = {
-      totalPosts: response.data.data.total_posts,
-      totalWords: response.data.data.total_words,
-      uniqueVisitors: response.data.data.unique_visitors,
-      totalViews: response.data.data.total_views,
+      totalPosts: response.data.data.totalPosts,
+      totalWords: response.data.data.totalWords,
+      uniqueVisitors: response.data.data.uniqueVisitors,
+      totalViews: response.data.data.totalViews,
     }
-    updateUptime(response.data.data.uptime_seconds)
+    updateUptime(response.data.data.uptimeSeconds)
     console.log('底部栏已加载')
   } catch (error) {
     console.error('Failed to fetch stats:', error)

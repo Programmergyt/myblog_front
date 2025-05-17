@@ -6,7 +6,7 @@
   >
     <h2>{{ post.title }}</h2>
     <div class="meta">
-      <el-tag type="info">{{ post.createTime }}</el-tag>
+      <el-tag type="info">{{ formattedTime  }}</el-tag>
       <el-tag
           v-for="tag in post.categoryNames"
           :key="tag"
@@ -19,11 +19,17 @@
   </el-card>
 </template>
 
+
 <script setup>
 import { useRouter } from 'vue-router'
+import {computed} from "vue";
+import dayjs from "dayjs";
 const router = useRouter()
-defineProps({
+const props = defineProps({
   post: Object,  // post 中包含 title、summary、create_time、categoryNames
+})
+const formattedTime = computed(() => {
+  return dayjs(props.post.createTime).format('YYYY-MM-DD HH:mm:ss')
 })
 </script>
 

@@ -50,6 +50,7 @@ const canDeletePost = computed(() => {
 // 获取当前登录用户信息
 const fetchCurrentUser = async () => {
   try {
+    console.log('即将执行getCurrentUser')
     const userResponse = await getCurrentUser();
     if (userResponse && userResponse.data && userResponse.data.code === 1 && userResponse.data.data) {
       currentUser.value = userResponse.data.data;
@@ -92,6 +93,7 @@ const handleDeletePost = async () => {
   )
       .then(async () => {
         try {
+          console.log('即将执行deleteBlog')
           await deleteBlog(post.value.id);
           ElMessage.success('删除成功');
           await router.push('/');
@@ -112,6 +114,7 @@ onMounted(async () => {
 
   try {
     console.log('已加载博客postId:', postId);
+    console.log("即将执行getBlogById和getAllTags");
     const [postResData, categoryResData] = await Promise.all([
       getBlogById(postId).then(res => {
         if (res && res.data && res.data.code === 1) return res.data.data;

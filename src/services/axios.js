@@ -87,7 +87,7 @@ instance.interceptors.response.use(response => {
             console.error('API Error:', res.msg || 'Unknown error');
             // 检查是否是未授权错误 (根据 LoginCheckInterceptor 返回的格式)
             if (res.code === 401 || res.msg === '未登录' || res.msg === '令牌无效或已过期') {
-                console.warn('Authentication required or token expired. Redirecting to login.');
+                console.warn('Authentication required or token expired. ');
                 // 清除本地存储的 token
                 localStorage.removeItem('authToken');
                 // 返回一个被拒绝的 Promise，中断当前的调用链
@@ -124,9 +124,9 @@ instance.interceptors.response.use(response => {
             // 未授权错误 (虽然我们期望后端在 200 响应中用 code=401，但也要处理 HTTP 401)
             console.warn('HTTP 401 Unauthorized. Redirecting to login.');
             localStorage.removeItem('authToken');
-            if (typeof window !== 'undefined') {
-                window.location.href = '/login';
-            }
+            // if (typeof window !== 'undefined') {
+            //     window.location.href = '/login';
+            // }
             return Promise.reject(new Error(data?.msg || 'Unauthorized'));
         } else if (status === 403) {
             // 禁止访问 (权限不足)
