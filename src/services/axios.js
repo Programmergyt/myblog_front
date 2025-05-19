@@ -16,6 +16,7 @@ instance.interceptors.request.use(config => {
         '/auth/login',
         '/auth/register',
         '/stats',
+        '/about',
         '/blogs/upload',
         { method: 'get', url: /^\/blogs(\/\d+)?$/ }, // 匹配 /blogs 或 /blogs/123
         { method: 'get', url: '/tags' },
